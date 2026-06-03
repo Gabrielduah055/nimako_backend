@@ -10,7 +10,10 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node server.ts",
-    "seed": "npm run build && node dist/seed/admin.js"
+    "seed": "npm run build && node dist/seed/admin.js",
+    "seed:admin": "npm run build && node dist/seed/admin.js",
+    "seed:cashier": "npm run build && node dist/seed/cashier.js",
+    "seed:all": "npm run seed:admin && npm run seed:cashier"
   },
   "keywords": [
     "pos",

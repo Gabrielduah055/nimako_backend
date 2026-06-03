@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+// ── Schema ────────────────────────────────────────────────────────────────────
 const ProductSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -63,4 +64,14 @@ const ProductSchema = new mongoose_1.Schema({
 });
 // Compound text index for name and category search
 ProductSchema.index({ name: 'text', category: 'text' });
+// ── Instance method: reduceStock ─────────────────────────────────────────────
+// Used by the sale controller inside MongoDB transactions.
+// The session must be passed externally via product.save({ session }).
+ProductSchema.methods.reduceStock = async function (quantity) {
+    if (this.stock < quantity) {
+        throw new Error(`Insufficient stock for "${this.name}". Available: ${this.stock}, Requested: ${quantity}.`);
+    }
+    this.stock -= quantity;
+    return this.save();
+};
 exports.default = (0, mongoose_1.model)('Product', ProductSchema);
