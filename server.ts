@@ -8,6 +8,7 @@ import dns from 'node:dns';
 import connectDB from './config/db';
 import productRoutes from './routes/products';
 import authRoutes from './routes/auth';
+import salesRoutes from './routes/sales';
 
 // Set public DNS servers before any network calls to bypass local SRV resolution issues
 dns.setServers(['8.8.8.8', '1.1.1.1']);
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/sales', salesRoutes);
 
 // Health Check Endpoint
 app.get('/health', (req: Request, res: Response) => {

@@ -11,18 +11,27 @@ const node_dns_1 = __importDefault(require("node:dns"));
 const db_1 = __importDefault(require("./config/db"));
 const products_1 = __importDefault(require("./routes/products"));
 const auth_1 = __importDefault(require("./routes/auth"));
+const sales_1 = __importDefault(require("./routes/sales"));
 // Set public DNS servers before any network calls to bypass local SRV resolution issues
 node_dns_1.default.setServers(['8.8.8.8', '1.1.1.1']);
 // Connect to Database
 (0, db_1.default)();
 const app = (0, express_1.default)();
 // Global Middlewares
-app.use((0, cors_1.default)());
+const corsOptions = {
+    origin: '*', // Allow all origins — restrict to your frontend domain in production if needed
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false,
+};
+app.use((0, cors_1.default)(corsOptions));
+app.options('*', (0, cors_1.default)(corsOptions)); // Handle preflight OPTIONS requests for all routes
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // API Routes
 app.use('/api/auth', auth_1.default);
 app.use('/api/products', products_1.default);
+app.use('/api/sales', sales_1.default);
 // Health Check Endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({

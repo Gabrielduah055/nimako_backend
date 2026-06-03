@@ -1,5 +1,6 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Model } from 'mongoose';
 
+// ── Interface ─────────────────────────────────────────────────────────────────
 export interface IProduct extends Document {
   name: string;
   barcode: string;
@@ -13,8 +14,11 @@ export interface IProduct extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Instance method
+  reduceStock(quantity: number): Promise<IProduct>;
 }
 
+// ── Schema ────────────────────────────────────────────────────────────────────
 const ProductSchema = new Schema<IProduct>(
   {
     name: {
@@ -81,5 +85,18 @@ const ProductSchema = new Schema<IProduct>(
 
 // Compound text index for name and category search
 ProductSchema.index({ name: 'text', category: 'text' });
+
+// ── Instance method: reduceStock ─────────────────────────────────────────────
+// Used by the sale controller inside MongoDB transactions.
+// The session must be passed externally via product.save({ session }).
+ProductSchema.methods.reduceStock = async function (quantity: number): Promise<IProduct> {
+  if (this.stock < quantity) {
+    throw new Error(
+      `Insufficient stock for "${this.name}". Available: ${this.stock}, Requested: ${quantity}.`
+    );
+  }
+  this.stock -= quantity;
+  return this.save();
+};
 
 export default model<IProduct>('Product', ProductSchema);
