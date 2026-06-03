@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Point of Sale backend for soap and detergent wholesale shop (TypeScript)",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
