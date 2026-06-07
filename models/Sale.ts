@@ -41,7 +41,7 @@ export interface ISale extends Document {
   discountValue: number;
   discountAmount: number;
   total: number;
-  paymentMethod: 'cash' | 'transfer' | 'mixed';
+  paymentMethod: 'cash' | 'transfer' | 'mobile_money' | 'card' | 'mixed';
   cashReceived: number;
   cashChange: number;
   transferReference?: string;
@@ -78,7 +78,7 @@ const SaleSchema = new Schema<ISale>(
     total: { type: Number, required: true, min: 0 },
     paymentMethod: {
       type: String,
-      enum: { values: ['cash', 'transfer', 'mixed'], message: 'Invalid payment method' },
+      enum: { values: ['cash', 'transfer', 'mobile_money', 'card', 'mixed'], message: 'Invalid payment method' },
       required: true,
     },
     cashReceived: { type: Number, default: 0, min: 0 },
@@ -100,5 +100,10 @@ const SaleSchema = new Schema<ISale>(
 
 // Index for date-range queries
 SaleSchema.index({ createdAt: -1 });
+// Index for payment breakdown aggregation
+SaleSchema.index({ paymentMethod: 1 });
+// Compound index for cashier reports
+SaleSchema.index({ cashierId: 1, createdAt: -1 });
+
 
 export default model<ISale>('Sale', SaleSchema);

@@ -4,6 +4,13 @@ import Product from '../models/Product';
 import Sale from '../models/Sale';
 import { AuthRequest } from '../middleware/auth';
 import { generateInvoiceNumber } from '../utils/invoiceGenerator';
+import {
+  DashboardChartPeriod,
+  getPaginatedTransactions,
+  getPaymentMethodBreakdown,
+  getSalesChartData,
+  getTopSellingProducts,
+} from '../services/saleAnalyticsService';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/sales
@@ -307,5 +314,75 @@ export const getCashierSales = async (req: Request, res: Response): Promise<Resp
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message || 'Failed to fetch cashier sales.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/transactions?page=1&limit=10
+// Paginated transactions list — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+export const getDashboardTransactions = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const page  = Math.max(1, parseInt(req.query.page  as string) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 10));
+    const data = await getPaginatedTransactions({ page, limit });
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || 'Failed to fetch transactions.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/chart?period=7d   (today | 7d | 30d | monthly)
+// Daily revenue aggregation — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+export const getSalesChart = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const requestedPeriod = (req.query.period as DashboardChartPeriod) || '7d';
+    const allowedPeriods: DashboardChartPeriod[] = ['today', '7d', '30d', 'monthly'];
+    const period = allowedPeriods.includes(requestedPeriod) ? requestedPeriod : '7d';
+    const data = await getSalesChartData(period);
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || 'Failed to generate chart data.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/top-products
+// Top 5 products by quantity sold — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+export const getTopProducts = async (_req: Request, res: Response): Promise<Response> => {
+  try {
+    const products = await getTopSellingProducts();
+
+    return res.status(200).json({ success: true, data: products });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || 'Failed to fetch top products.' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/payment-breakdown
+// Revenue grouped by payment method — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+export const getPaymentBreakdown = async (_req: Request, res: Response): Promise<Response> => {
+  try {
+    const data = await getPaymentMethodBreakdown();
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || 'Failed to fetch payment breakdown.' });
   }
 };

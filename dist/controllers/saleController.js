@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCashierSales = exports.getSaleByInvoice = exports.getSalesByDateRange = exports.getTodaySales = exports.createSale = void 0;
+exports.getPaymentBreakdown = exports.getTopProducts = exports.getSalesChart = exports.getDashboardTransactions = exports.getCashierSales = exports.getSaleByInvoice = exports.getSalesByDateRange = exports.getTodaySales = exports.createSale = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const Product_1 = __importDefault(require("../models/Product"));
 const Sale_1 = __importDefault(require("../models/Sale"));
 const invoiceGenerator_1 = require("../utils/invoiceGenerator");
+const saleAnalyticsService_1 = require("../services/saleAnalyticsService");
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/sales
 // Create a new sale (cashier or admin)
@@ -267,3 +268,73 @@ const getCashierSales = async (req, res) => {
     }
 };
 exports.getCashierSales = getCashierSales;
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/transactions?page=1&limit=10
+// Paginated transactions list — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+const getDashboardTransactions = async (req, res) => {
+    try {
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+        const data = await (0, saleAnalyticsService_1.getPaginatedTransactions)({ page, limit });
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({ success: false, message: error.message || 'Failed to fetch transactions.' });
+    }
+};
+exports.getDashboardTransactions = getDashboardTransactions;
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/chart?period=7d   (today | 7d | 30d | monthly)
+// Daily revenue aggregation — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+const getSalesChart = async (req, res) => {
+    try {
+        const requestedPeriod = req.query.period || '7d';
+        const allowedPeriods = ['today', '7d', '30d', 'monthly'];
+        const period = allowedPeriods.includes(requestedPeriod) ? requestedPeriod : '7d';
+        const data = await (0, saleAnalyticsService_1.getSalesChartData)(period);
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({ success: false, message: error.message || 'Failed to generate chart data.' });
+    }
+};
+exports.getSalesChart = getSalesChart;
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/top-products
+// Top 5 products by quantity sold — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+const getTopProducts = async (_req, res) => {
+    try {
+        const products = await (0, saleAnalyticsService_1.getTopSellingProducts)();
+        return res.status(200).json({ success: true, data: products });
+    }
+    catch (error) {
+        return res.status(500).json({ success: false, message: error.message || 'Failed to fetch top products.' });
+    }
+};
+exports.getTopProducts = getTopProducts;
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/sales/dashboard/payment-breakdown
+// Revenue grouped by payment method — admin only
+// ─────────────────────────────────────────────────────────────────────────────
+const getPaymentBreakdown = async (_req, res) => {
+    try {
+        const data = await (0, saleAnalyticsService_1.getPaymentMethodBreakdown)();
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({ success: false, message: error.message || 'Failed to fetch payment breakdown.' });
+    }
+};
+exports.getPaymentBreakdown = getPaymentBreakdown;

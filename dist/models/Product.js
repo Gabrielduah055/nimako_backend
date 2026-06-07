@@ -64,6 +64,7 @@ const ProductSchema = new mongoose_1.Schema({
 });
 // Compound text index for name and category search
 ProductSchema.index({ name: 'text', category: 'text' });
+ProductSchema.index({ stock: 1, isActive: 1 });
 // ── Instance method: reduceStock ─────────────────────────────────────────────
 // Used by the sale controller inside MongoDB transactions.
 // The session must be passed externally via product.save({ session }).

@@ -4,6 +4,7 @@ import { protect, adminOnly } from '../middleware/auth';
 import {
   bulkUploadProducts,
   getAllProducts,
+  getLowStockProducts,
   getProductById,
   getProductByBarcode,
   updateProduct,
@@ -30,6 +31,8 @@ router.get('/', getAllProducts);
 
 // GET    /api/products/barcode/:code → public (cashier barcode scan)
 // NOTE: must be before /:id to avoid "barcode" being matched as an ObjectId
+router.get('/low-stock', protect, adminOnly, getLowStockProducts);
+
 router.get('/barcode/:code', getProductByBarcode);
 
 // GET    /api/products/:id          → public

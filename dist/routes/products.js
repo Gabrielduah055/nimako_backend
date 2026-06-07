@@ -20,6 +20,7 @@ router.delete('/:id', auth_1.protect, auth_1.adminOnly, productController_1.dele
 router.get('/', productController_1.getAllProducts);
 // GET    /api/products/barcode/:code → public (cashier barcode scan)
 // NOTE: must be before /:id to avoid "barcode" being matched as an ObjectId
+router.get('/low-stock', auth_1.protect, auth_1.adminOnly, productController_1.getLowStockProducts);
 router.get('/barcode/:code', productController_1.getProductByBarcode);
 // GET    /api/products/:id          → public
 router.get('/:id', productController_1.getProductById);

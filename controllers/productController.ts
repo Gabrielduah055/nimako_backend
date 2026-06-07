@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
 import { parseExcelBuffer } from '../utils/excelParser';
+import { getLowStockInventory } from '../services/productInventoryService';
 
 // ─────────────────────────────────────────────
 // POST /api/products/bulk-upload
@@ -132,6 +133,29 @@ export const getAllProducts = async (req: Request, res: Response): Promise<Respo
 };
 
 // ─────────────────────────────────────────────
+// GET /api/products/low-stock?threshold=5&limit=20
+export const getLowStockProducts = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const threshold = parseInt(req.query.threshold as string, 10);
+    const limit = parseInt(req.query.limit as string, 10);
+
+    const data = await getLowStockInventory({
+      threshold: Number.isFinite(threshold) ? threshold : 5,
+      limit: Number.isFinite(limit) ? limit : 20,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch low-stock products.',
+    });
+  }
+};
+
 // GET /api/products/:id
 // ─────────────────────────────────────────────
 export const getProductById = async (req: Request, res: Response): Promise<Response> => {
