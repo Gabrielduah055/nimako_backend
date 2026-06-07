@@ -44,7 +44,7 @@ const SaleSchema = new mongoose_1.Schema({
     total: { type: Number, required: true, min: 0 },
     paymentMethod: {
         type: String,
-        enum: { values: ['cash', 'transfer', 'mixed'], message: 'Invalid payment method' },
+        enum: { values: ['cash', 'transfer', 'mobile_money', 'card', 'mixed'], message: 'Invalid payment method' },
         required: true,
     },
     cashReceived: { type: Number, default: 0, min: 0 },
@@ -63,4 +63,8 @@ const SaleSchema = new mongoose_1.Schema({
 });
 // Index for date-range queries
 SaleSchema.index({ createdAt: -1 });
+// Index for payment breakdown aggregation
+SaleSchema.index({ paymentMethod: 1 });
+// Compound index for cashier reports
+SaleSchema.index({ cashierId: 1, createdAt: -1 });
 exports.default = (0, mongoose_1.model)('Sale', SaleSchema);

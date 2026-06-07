@@ -3,9 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProduct = exports.updateProduct = exports.getProductByBarcode = exports.getProductById = exports.getAllProducts = exports.bulkUploadProducts = void 0;
+exports.deleteProduct = exports.updateProduct = exports.getProductByBarcode = exports.getProductById = exports.getLowStockProducts = exports.getAllProducts = exports.bulkUploadProducts = void 0;
 const Product_1 = __importDefault(require("../models/Product"));
 const excelParser_1 = require("../utils/excelParser");
+const productInventoryService_1 = require("../services/productInventoryService");
 // ─────────────────────────────────────────────
 // POST /api/products/bulk-upload
 // ─────────────────────────────────────────────
@@ -116,6 +117,28 @@ const getAllProducts = async (req, res) => {
 };
 exports.getAllProducts = getAllProducts;
 // ─────────────────────────────────────────────
+// GET /api/products/low-stock?threshold=5&limit=20
+const getLowStockProducts = async (req, res) => {
+    try {
+        const threshold = parseInt(req.query.threshold, 10);
+        const limit = parseInt(req.query.limit, 10);
+        const data = await (0, productInventoryService_1.getLowStockInventory)({
+            threshold: Number.isFinite(threshold) ? threshold : 5,
+            limit: Number.isFinite(limit) ? limit : 20,
+        });
+        return res.status(200).json({
+            success: true,
+            data,
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to fetch low-stock products.',
+        });
+    }
+};
+exports.getLowStockProducts = getLowStockProducts;
 // GET /api/products/:id
 // ─────────────────────────────────────────────
 const getProductById = async (req, res) => {

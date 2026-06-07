@@ -85,6 +85,7 @@ const ProductSchema = new Schema<IProduct>(
 
 // Compound text index for name and category search
 ProductSchema.index({ name: 'text', category: 'text' });
+ProductSchema.index({ stock: 1, isActive: 1 });
 
 // ── Instance method: reduceStock ─────────────────────────────────────────────
 // Used by the sale controller inside MongoDB transactions.
