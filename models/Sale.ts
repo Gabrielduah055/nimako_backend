@@ -34,6 +34,7 @@ const SaleItemSchema = new Schema<ISaleItem>(
 
 // ── Sale ──────────────────────────────────────────────────────────────────────
 export interface ISale extends Document {
+  localTransactionId?: string;
   invoiceNumber: string;
   items: ISaleItem[];
   subtotal: number;
@@ -48,6 +49,12 @@ export interface ISale extends Document {
   customerName: string;
   cashierId: Types.ObjectId;
   cashierName: string;
+  sessionId?: string;
+  syncStatus: 'synced' | 'pending' | 'failed';
+  syncedAt?: Date;
+  source: 'online' | 'offline-sync';
+  stockConflict?: boolean;
+  stockConflictMessage?: string;
   createdAt: Date;
 }
 
@@ -57,6 +64,13 @@ const SaleSchema = new Schema<ISale>(
       type: String,
       required: true,
       unique: true,
+      index: true,
+    },
+    localTransactionId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
       index: true,
     },
     items: {
@@ -92,6 +106,22 @@ const SaleSchema = new Schema<ISale>(
       index: true,
     },
     cashierName: { type: String, required: true },
+    sessionId: { type: String, trim: true, index: true },
+    syncStatus: {
+      type: String,
+      enum: ['synced', 'pending', 'failed'],
+      default: 'synced',
+      index: true,
+    },
+    syncedAt: { type: Date },
+    source: {
+      type: String,
+      enum: ['online', 'offline-sync'],
+      default: 'online',
+      index: true,
+    },
+    stockConflict: { type: Boolean, default: false },
+    stockConflictMessage: { type: String, trim: true },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
@@ -104,6 +134,8 @@ SaleSchema.index({ createdAt: -1 });
 SaleSchema.index({ paymentMethod: 1 });
 // Compound index for cashier reports
 SaleSchema.index({ cashierId: 1, createdAt: -1 });
+SaleSchema.index({ invoiceNumber: 1 });
+SaleSchema.index({ sessionId: 1 });
 
 
 export default model<ISale>('Sale', SaleSchema);

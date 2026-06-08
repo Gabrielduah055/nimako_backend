@@ -25,6 +25,13 @@ const SaleSchema = new mongoose_1.Schema({
         unique: true,
         index: true,
     },
+    localTransactionId: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true,
+        index: true,
+    },
     items: {
         type: [SaleItemSchema],
         required: true,
@@ -58,6 +65,22 @@ const SaleSchema = new mongoose_1.Schema({
         index: true,
     },
     cashierName: { type: String, required: true },
+    sessionId: { type: String, trim: true, index: true },
+    syncStatus: {
+        type: String,
+        enum: ['synced', 'pending', 'failed'],
+        default: 'synced',
+        index: true,
+    },
+    syncedAt: { type: Date },
+    source: {
+        type: String,
+        enum: ['online', 'offline-sync'],
+        default: 'online',
+        index: true,
+    },
+    stockConflict: { type: Boolean, default: false },
+    stockConflictMessage: { type: String, trim: true },
 }, {
     timestamps: { createdAt: true, updatedAt: false },
 });
@@ -67,4 +90,6 @@ SaleSchema.index({ createdAt: -1 });
 SaleSchema.index({ paymentMethod: 1 });
 // Compound index for cashier reports
 SaleSchema.index({ cashierId: 1, createdAt: -1 });
+SaleSchema.index({ invoiceNumber: 1 });
+SaleSchema.index({ sessionId: 1 });
 exports.default = (0, mongoose_1.model)('Sale', SaleSchema);
