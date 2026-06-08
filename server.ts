@@ -9,6 +9,9 @@ import connectDB from './config/db';
 import productRoutes from './routes/products';
 import authRoutes from './routes/auth';
 import salesRoutes from './routes/sales';
+import syncRoutes from './routes/sync';
+import transactionRoutes from './routes/transactions';
+import cashierSessionRoutes from './routes/cashierSessions';
 
 // Set public DNS servers before any network calls to bypass local SRV resolution issues
 dns.setServers(['8.8.8.8', '1.1.1.1']);
@@ -34,6 +37,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', salesRoutes);
+app.use('/api/sync', syncRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/cashier-sessions', cashierSessionRoutes);
 
 // Health Check Endpoint
 app.get('/health', (req: Request, res: Response) => {

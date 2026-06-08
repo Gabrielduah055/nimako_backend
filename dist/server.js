@@ -12,6 +12,9 @@ const db_1 = __importDefault(require("./config/db"));
 const products_1 = __importDefault(require("./routes/products"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const sales_1 = __importDefault(require("./routes/sales"));
+const sync_1 = __importDefault(require("./routes/sync"));
+const transactions_1 = __importDefault(require("./routes/transactions"));
+const cashierSessions_1 = __importDefault(require("./routes/cashierSessions"));
 // Set public DNS servers before any network calls to bypass local SRV resolution issues
 node_dns_1.default.setServers(['8.8.8.8', '1.1.1.1']);
 // Connect to Database
@@ -32,6 +35,9 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use('/api/auth', auth_1.default);
 app.use('/api/products', products_1.default);
 app.use('/api/sales', sales_1.default);
+app.use('/api/sync', sync_1.default);
+app.use('/api/transactions', transactions_1.default);
+app.use('/api/cashier-sessions', cashierSessions_1.default);
 // Health Check Endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
